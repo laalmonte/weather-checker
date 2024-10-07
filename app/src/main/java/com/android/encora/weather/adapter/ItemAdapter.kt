@@ -12,22 +12,20 @@ import androidx.recyclerview.widget.RecyclerView
 import com.airbnb.lottie.LottieAnimationView
 import com.android.encora.weather.R
 import kotlin.properties.Delegates
-import com.android.encora.weather.api.data.Results
-import com.android.encora.weather.db.Track
+import com.android.encora.weather.db.Weather
 import com.android.encora.weather.extension.loadUrl
 
 /*
 ItemAdapter is the adapter class for Home API List UI
 */
-class ItemAdapter(private val onItemSelectCallback: OnItemSelectCallback) :
+class ItemAdapter() :
     RecyclerView.Adapter<ItemAdapter.ViewHolder>() {
 
-    private var oldResultList = mutableListOf<Results>()
-    private var dbTrackList : List<Track> = emptyList()
+    private var dbWeatherList : List<Weather> = emptyList()
 
     private lateinit var mContext: Context
 
-    private var resultList: List<Results> by Delegates.observable(emptyList()) { _, _, _ ->
+    private var weatherList: List<Weather> by Delegates.observable(emptyList()) { _, _, _ ->
         notifyDataSetChanged()
     }
 
@@ -35,70 +33,49 @@ class ItemAdapter(private val onItemSelectCallback: OnItemSelectCallback) :
         return ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.view_item, parent, false))
     }
 
-    override fun getItemCount(): Int = resultList.size
+    override fun getItemCount(): Int = weatherList.size
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bindItem(resultList[position], position)
+        holder.bindItem(weatherList[position], position)
     }
 
     fun updateContext(contextParam: Context){
         mContext = contextParam
     }
 
-    fun updateResultList(newDataSet: List<Results>) {
-        oldResultList.clear()
-        oldResultList.addAll(newDataSet)
-        resultList = emptyList()
-        resultList = oldResultList
-        notifyDataSetChanged()
-    }
-
-    fun updateTrackList(trackList: List<Track>) {
-        dbTrackList = emptyList()
-        dbTrackList = trackList
+    fun updateWeatherList(weatherListParam: List<Weather>) {
+        weatherList = emptyList()
+        weatherList = weatherListParam
         notifyDataSetChanged()
     }
 
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        fun bindItem(obj: Results, position: Int) {
+        fun bindItem(obj: Weather, position: Int) {
             val tvName = itemView.findViewById<AppCompatTextView>(R.id.tvName)
-            val tvGenre = itemView.findViewById<AppCompatTextView>(R.id.tvGenre)
-            val tvPrice = itemView.findViewById<AppCompatTextView>(R.id.tvPrice)
-            val ivArtwork = itemView.findViewById<AppCompatImageView>(R.id.ivArtwork)
-            val trackLayout = itemView.findViewById<LinearLayoutCompat>(R.id.trackLayout)
+            val tvCountry = itemView.findViewById<AppCompatTextView>(R.id.tvCountry)
+            val tvTemp = itemView.findViewById<AppCompatTextView>(R.id.tvTemp)
+            val tvTime = itemView.findViewById<AppCompatTextView>(R.id.tvTime)
 
 
             var name = ""
-            obj.trackName?.let {
-                name = "Track Name: " + obj.trackName
-
-                // check if saved to favorite
-                var isFavorite = false
-                dbTrackList.forEach { dbTrack ->
-                    if (dbTrack.trackName.equals(obj.trackName)){ isFavorite = true }
-                }
+            obj.name?.let {
+                name = "City Name: " + obj.name
 
             } ?: run {
-                name = "Track Name: None"
+                name = "City Name: None"
             }
 
-            val genre = "Genre: " + obj.primaryGenreName
-            val prc = "Price: $" + obj.trackPrice.toString()
+            val country = "Country: " + obj.country
+            val temp = "Temp: " + obj.temperature.toString() + " Celcius"
+            val time = "Time: " + obj.timestamp.toString()
 
             tvName.text = name
-            tvGenre.text = genre
-            tvPrice.text = prc
-
-            ivArtwork.loadUrl(obj.artworkUrl60)
-
-            trackLayout.setOnClickListener { onItemSelectCallback.onSelectItem(obj) }
+            tvCountry.text = country
+            tvTime.text = time
+            tvTemp.text = temp
 
         }
-    }
-
-    interface OnItemSelectCallback {
-        fun onSelectItem(trackObject: Results)
     }
 
 }

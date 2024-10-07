@@ -1,6 +1,5 @@
 package com.android.encora.weather.di
 
-import com.android.encora.weather.api.TrackService
 import com.android.encora.weather.api.WeatherService
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
@@ -42,9 +41,5 @@ object NetworkModule {
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-
-    @Provides
-    @Singleton
-    fun provideTrackService(retrofit: Retrofit): TrackService = retrofit.create(TrackService::class.java)
 
 }

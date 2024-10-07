@@ -1,15 +1,11 @@
 package com.android.encora.weather.ui.main
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.encora.weather.api.WeatherRepository
-import com.android.encora.weather.api.data.Data
-import com.android.encora.weather.db.TrackRepository
-import com.android.encora.weather.api.data.Result
-import com.android.encora.weather.db.Track
+import com.android.encora.weather.db.Weather
 import com.android.encora.weather.model.*
 import kotlinx.coroutines.launch
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,28 +18,18 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel
 @Inject constructor(
-    private val trackRepository: TrackRepository,
+    private val weatherDbRepository: com.android.encora.weather.db.WeatherRepository,
     private val weatherRepository: WeatherRepository
 ) : ViewModel() {
 
-    private val _weatherResponse: MutableStateFlow<CityData> = MutableStateFlow(
-        CityData(
-            listOf(WeatherData()),
-            TempData(),
-            WindData(),
-            SysData(),
-        )
-    )
 
-    val weatherResponse: StateFlow<CityData> = _weatherResponse
-    private val searchChannel = MutableSharedFlow<String>(1)
+    val _weatherResp = MutableLiveData<CityData>()
+    val _saveResp = MutableLiveData<String>()
+    val _clearResp = MutableLiveData<String>()
 
-    private val _data = MutableLiveData<Data<Result>>()
-    private val _data2 = MutableLiveData<List<Track>>()
-    val data: LiveData<Data<Result>>
-        get() = _data
+    private val _data2 = MutableLiveData<List<Weather>>()
 
-    val data2: LiveData<List<Track>>
+    val data2: LiveData<List<Weather>>
         get() = _data2
 
     init {
@@ -53,24 +39,27 @@ class MainViewModel
     fun getCityData(longitude: String, latitude: String) {
         viewModelScope.launch {
             val resp = weatherRepository.getCityData(latitude, longitude)
-            _weatherResponse.value = resp
+            _weatherResp.postValue(resp)
         }
     }
 
-    // calls API to get responses as result object for the home tab
-    fun getTracks() =
+    fun saveToDB(weather: Weather) =
         viewModelScope.launch {
-            _data.postValue(Data.loading(null))
-            _data.postValue(trackRepository.getResult())
+            weatherDbRepository.saveWeather(weather)
+            _saveResp.postValue("Success")
         }
 
-    // gets saved tracks from db for the favorites tab
-    fun getTracksFromDB() =
+    fun getWeatherFromDB() =
         viewModelScope.launch {
-            _data2.postValue(trackRepository.getSaveTracks())
+            _data2.postValue(weatherDbRepository.getSaveWeather())
         }
 
+    fun clear(){
+        viewModelScope.launch {
+            weatherDbRepository.clearData()
+            _clearResp.postValue("Success")
+        }
+    }
 
-//    fun clearData() { trackRepository.clearData() }
 
 }

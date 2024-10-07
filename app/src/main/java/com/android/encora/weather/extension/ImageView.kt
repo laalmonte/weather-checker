@@ -15,6 +15,13 @@ fun AppCompatImageView.loadUrl(imageUrl: String?) {
     Glide.with(context)
         .load(imageUrl)
         .diskCacheStrategy(DiskCacheStrategy.NONE)
-        .apply(RequestOptions().transforms(RoundedCorners(24)))
+        .into(this)
+}
+
+fun AppCompatImageView.loadDrawable(drawableUrl: Int) {
+
+    Glide.with(context)
+        .load(drawableUrl)
+        .diskCacheStrategy(DiskCacheStrategy.NONE)
         .into(this)
 }

@@ -1,6 +1,5 @@
 package com.android.encora.weather.ui.main
 
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -11,24 +10,15 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.android.encora.weather.adapter.ItemAdapter
-import com.android.encora.weather.adapter.TrackAdapter
-import com.android.encora.weather.api.data.Results
 import com.android.encora.weather.databinding.FragmentSecondBinding
-import com.android.encora.weather.db.Track
-import com.android.encora.weather.model.ParcelableResult
-
-
-/*
-Second Fragment is the Favorites Tab that displays save items as favorites
-Favorites are items fetched from the track database
-*/
+import com.android.encora.weather.db.Weather
 
 class SecondFragment() : Fragment() {
     private var _binding: FragmentSecondBinding? = null
     private val binding get() = _binding!!
-    private var tracksList: List<Track> = emptyList()
+    private var weatherList: List<Weather> = emptyList()
     private val activityViewModel by activityViewModels<MainViewModel>()
-    private lateinit var trackAdapter: TrackAdapter
+    private lateinit var itemAdapter: ItemAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -42,71 +32,49 @@ class SecondFragment() : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         subscribeUI()
         setupAdapter()
-        activityViewModel.getTracksFromDB()
+        attachActions()
     }
 
-    // pre-setup for the list track adapter
+    private fun attachActions(){
+        binding.btnClear.setOnClickListener {
+            activityViewModel.clear()
+        }
+    }
     private fun setupAdapter(){
-        trackAdapter = TrackAdapter(onItemSelectCallback)
+        itemAdapter = ItemAdapter()
         binding.itemList.apply {
-            adapter = trackAdapter
+            adapter = itemAdapter
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         }
-        trackAdapter.updateTrackList(emptyList())
+        itemAdapter.updateWeatherList(emptyList())
     }
 
-    // callback from track adapter
-    private val onItemSelectCallback = object : TrackAdapter.OnItemSelectCallback {
-        override fun onSelectItem(track: Track) {
-//            val detailIntent = Intent(requireActivity() , DetailActivity::class.java)
-//            detailIntent.putExtra("result", ParcelableResult(
-//                track.artistId,
-//                track.artistName,
-//                track.artistViewUrl,
-//                track.artworkUrl100,
-//                track.artworkUrl30,
-//                track.artworkUrl60,
-//                track.collectionCensoredName,
-//                track.collectionExplicitness,
-//                track.collectionId,
-//                track.collectionName,
-//                track.collectionPrice,
-//                track.collectionViewUrl,
-//                track.country,
-//                track.currency,
-//                track.discCount,
-//                track.discNumber,
-//                track.kind,
-//                track.previewUrl,
-//                track.primaryGenreName,
-//                track.releaseDate,
-//                track.trackCensoredName,
-//                track.trackCount,
-//                track.trackExplicitness,
-//                track.trackId,
-//                track.trackName,
-//                track.trackNumber,
-//                track.trackPrice,
-//                track.trackTimeMillis,
-//                track.trackViewUrl,
-//                track.wrapperType,)
-//            )
-//            startActivity(detailIntent)
-        }
-    }
 
-    // all lifecycle observe can be found here
     private fun subscribeUI(){
-        activityViewModel.data2.observe( viewLifecycleOwner, Observer { tracks ->
-            tracksList = tracks
-            if (tracksList.size > 0){
-                trackAdapter.updateTrackList(tracksList)
+        activityViewModel._clearResp.observe( viewLifecycleOwner, Observer { clear ->
+            if (clear == "Success"){
+                activityViewModel.getWeatherFromDB()
+            }
+        })
+
+        activityViewModel.data2.observe( viewLifecycleOwner, Observer { weather ->
+            Log.e("CHECKER", "Weather from db ${weather.toString()}" )
+            weatherList = weather
+            if (weatherList.size > 0){
+                itemAdapter.updateWeatherList(weatherList)
                 binding.itemList.visibility = View.VISIBLE
                 binding.noFavoritesLayout.visibility = View.GONE
+                binding.btnClear.visibility = View.VISIBLE
             } else {
                 binding.itemList.visibility = View.GONE
                 binding.noFavoritesLayout.visibility = View.VISIBLE
+                binding.btnClear.visibility = View.GONE
             }
         })
+    }
+
+    override fun onResume() {
+        super.onResume()
+        activityViewModel.getWeatherFromDB()
     }
 }

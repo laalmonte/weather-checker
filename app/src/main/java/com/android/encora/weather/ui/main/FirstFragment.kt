@@ -2,35 +2,27 @@ package com.android.encora.weather.ui.main
 
 import android.Manifest
 import android.content.Context
-
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
-
+import androidx.lifecycle.Observer
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-
-import androidx.lifecycle.lifecycleScope
-
 import com.android.encora.weather.R
-
 import com.android.encora.weather.databinding.FragmentFirstBinding
-
+import com.android.encora.weather.db.Weather
+import com.android.encora.weather.extension.loadDrawable
 import com.android.encora.weather.model.CityData
-
-import com.bumptech.glide.Glide
-import java.math.RoundingMode
-import java.text.DecimalFormat
+import com.android.encora.weather.util.DateHelper
+import com.android.encora.weather.util.MathHelper
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -54,18 +46,19 @@ class FirstFragment() : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         checkLocationPermission()
+        subscribeUi()
+    }
 
-        lifecycleScope.launchWhenStarted {
-            activityViewModel.weatherResponse.collect { response ->
-                Log.e("CHECKER", "response ${response.toString()}")
+    private fun subscribeUi(){
+        activityViewModel._weatherResp.observe(requireActivity(), Observer { response ->
+            Log.e("CHECKER", "response ${response.toString()}")
                 if (response.weather[0].description != ""){
                     hideLoading()
                     setupData(response)
                 } else {
                     showLoading()
                 }
-            }
-        }
+        })
     }
 
     private fun checkLocationPermission(){
@@ -127,25 +120,35 @@ class FirstFragment() : Fragment() {
     private fun setupData(cityData: CityData){
         when (cityData.weather[0].description) {
             "clear sky", "mist" -> {
-                Glide.with(requireActivity())
-                    .load(R.drawable.bg_clear)
-                    .into(binding.ivBg)
-            }
-            "haze", "overcast clouds" -> {
-                Glide.with(requireActivity())
-                    .load(R.drawable.bg_cloudy)
-                    .into(binding.ivBg)
-            }
-            else -> {
-                Glide.with(requireActivity())
-                    .load(R.drawable.bg_rainy)
-                    .into(binding.ivBg)
+                binding.ivBg.loadDrawable(R.drawable.bg_clear)
+                binding.tvLat.setTextColor(ContextCompat.getColor(requireActivity(),R.color.primaryDark))
+                binding.tvLong.setTextColor(ContextCompat.getColor(requireActivity(),R.color.primaryDark))
+                binding.tvCountry.setTextColor(ContextCompat.getColor(requireActivity(),R.color.primaryDark))
+                binding.tvName.setTextColor(ContextCompat.getColor(requireActivity(),R.color.primaryDark))
+                binding.tvSunset.setTextColor(ContextCompat.getColor(requireActivity(),R.color.primaryDark))
+                binding.tvSunrise.setTextColor(ContextCompat.getColor(requireActivity(),R.color.primaryDark))
+            } "haze", "overcast clouds" -> {
+                binding.ivBg.loadDrawable(R.drawable.bg_cloudy)
+                binding.tvLat.setTextColor(ContextCompat.getColor(requireActivity(),R.color.white))
+                binding.tvLong.setTextColor(ContextCompat.getColor(requireActivity(),R.color.white))
+                binding.tvCountry.setTextColor(ContextCompat.getColor(requireActivity(),R.color.white))
+                binding.tvName.setTextColor(ContextCompat.getColor(requireActivity(),R.color.white))
+                binding.tvSunset.setTextColor(ContextCompat.getColor(requireActivity(),R.color.white))
+                binding.tvSunrise.setTextColor(ContextCompat.getColor(requireActivity(),R.color.white))
+            } else -> {
+                binding.ivBg.loadDrawable(R.drawable.bg_rainy)
+                binding.tvLat.setTextColor(ContextCompat.getColor(requireActivity(),R.color.white))
+                binding.tvLong.setTextColor(ContextCompat.getColor(requireActivity(),R.color.white))
+                binding.tvCountry.setTextColor(ContextCompat.getColor(requireActivity(),R.color.white))
+                binding.tvName.setTextColor(ContextCompat.getColor(requireActivity(),R.color.white))
+                binding.tvSunset.setTextColor(ContextCompat.getColor(requireActivity(),R.color.white))
+                binding.tvSunrise.setTextColor(ContextCompat.getColor(requireActivity(),R.color.white))
             }
         }
 
         binding.tvName.text = cityData.name
         val celciusTemp = cityData.main.temp - 273.15
-        binding.tvTemp.text = roundOffDecimal(celciusTemp)
+        binding.tvTemp.text = MathHelper().roundOffDecimal(celciusTemp)
 
         val sunsetTime = "Sunset: " + SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(Date(cityData.sys.sunset))
         val sunriseTime = "Sunrise: " + SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(Date(cityData.sys.sunrise))
@@ -154,26 +157,15 @@ class FirstFragment() : Fragment() {
 
         binding.tvCountry.text = cityData.sys.country
 
-        if (isDayTime){
+        if (DateHelper().isDayTime){
             binding.ivNight.visibility = View.GONE
             binding.ivDay.visibility = View.VISIBLE
         } else {
             binding.ivNight.visibility = View.VISIBLE
             binding.ivDay.visibility = View.GONE
         }
-    }
 
-    val isDayTime : Boolean
-        get() {
-            val cal = Calendar.getInstance()
-            val hour = cal.get(Calendar.HOUR_OF_DAY)
-            return hour in 8..20
-        }
-
-    private fun roundOffDecimal(number: Double): String {
-        val df = DecimalFormat("#")
-        df.roundingMode = RoundingMode.FLOOR
-        return df.format(number).toString()
+        activityViewModel.saveToDB(Weather(cityData.name,cityData.sys.country,MathHelper().roundOffDecimal(celciusTemp),DateHelper().getCurrentDateTime().toString()))
     }
 
 
@@ -189,12 +181,10 @@ class FirstFragment() : Fragment() {
 
     override fun onResume() {
         super.onResume()
-
         checkLocationPermission()
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int,
-                                            permissions: Array<String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         when (requestCode) {
             101 -> {
                 if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
