@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">WeatherChecker</string>
+    <string name="tab_text_1">Tracks</string>
+    <string name="tab_text_2">Favorites</string>
+    <string name="name">Name:</string>
+    <string name="price">Price:</string>
+    <string name="genre">Genre:</string>
+    <string name="date">Date:</string>
+    <string name="home">HOME</string>
+    <string name="log">LOG</string>
+    <string name="no_favorites">You have no saved <i>favorites</i> yet, \nPlease pick a track and tap \'<b>Add</b>\'</string>
+    <string name="search">Search</string>
+    <string name="back_to_list"><u>Back To List</u></string>
+    <string name="favorite_message">"Click on add to save your favorites, and create your own collection now!"</string>
+    <string name="add">ADD</string>
+
+</resources>
