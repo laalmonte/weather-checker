@@ -17,12 +17,12 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideItunesDatabase(@ApplicationContext appContext: Context): WeatherDatabase =
+    fun provideWeatherDatabase(@ApplicationContext appContext: Context): WeatherDatabase =
         buildDatabase(appContext)
 
 
     @Provides
-    fun provideTrackDao(weatherDatabase: WeatherDatabase): WeatherDao = weatherDatabase.weatherDao()
+    fun provideWeatherDao(weatherDatabase: WeatherDatabase): WeatherDao = weatherDatabase.weatherDao()
 
 
     private fun buildDatabase(appContext: Context): WeatherDatabase{

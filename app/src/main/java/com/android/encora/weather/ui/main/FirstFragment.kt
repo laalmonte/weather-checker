@@ -34,6 +34,8 @@ class FirstFragment() : Fragment() {
     private val binding get() = _binding!!
     private var locationManager : LocationManager? = null
 
+    private var appIdString = "";
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -47,11 +49,12 @@ class FirstFragment() : Fragment() {
 
         checkLocationPermission()
         subscribeUi()
+
+        appIdString  = requireActivity().intent.getStringExtra("appid").toString()
     }
 
     private fun subscribeUi(){
         activityViewModel._weatherResp.observe(requireActivity(), Observer { response ->
-            Log.e("CHECKER", "response ${response.toString()}")
                 if (response.weather[0].description != ""){
                     hideLoading()
                     setupData(response)
@@ -102,14 +105,13 @@ class FirstFragment() : Fragment() {
 
     private val locationListener: LocationListener = object : LocationListener {
         override fun onLocationChanged(location: Location) {
-            Log.e("CHECKER","long:" + location.longitude + " lat:" + location.latitude)
 
             val latString = "Latitude: " + location.latitude.toString()
             val longString = "Longitude: " + location.longitude.toString()
             binding.tvLat.text = latString
             binding.tvLong.text = longString
 
-            activityViewModel.getCityData(location.latitude.toString(), location.longitude.toString())
+            activityViewModel.getCityData(location.latitude.toString(), location.longitude.toString(), appIdString)
         }
         override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {}
         override fun onProviderEnabled(provider: String) {}
@@ -128,21 +130,9 @@ class FirstFragment() : Fragment() {
                 binding.tvSunset.setTextColor(ContextCompat.getColor(requireActivity(),R.color.primaryDark))
                 binding.tvSunrise.setTextColor(ContextCompat.getColor(requireActivity(),R.color.primaryDark))
             } "haze", "overcast clouds" -> {
-                binding.ivBg.loadDrawable(R.drawable.bg_cloudy)
-                binding.tvLat.setTextColor(ContextCompat.getColor(requireActivity(),R.color.white))
-                binding.tvLong.setTextColor(ContextCompat.getColor(requireActivity(),R.color.white))
-                binding.tvCountry.setTextColor(ContextCompat.getColor(requireActivity(),R.color.white))
-                binding.tvName.setTextColor(ContextCompat.getColor(requireActivity(),R.color.white))
-                binding.tvSunset.setTextColor(ContextCompat.getColor(requireActivity(),R.color.white))
-                binding.tvSunrise.setTextColor(ContextCompat.getColor(requireActivity(),R.color.white))
+                whiteText()
             } else -> {
-                binding.ivBg.loadDrawable(R.drawable.bg_rainy)
-                binding.tvLat.setTextColor(ContextCompat.getColor(requireActivity(),R.color.white))
-                binding.tvLong.setTextColor(ContextCompat.getColor(requireActivity(),R.color.white))
-                binding.tvCountry.setTextColor(ContextCompat.getColor(requireActivity(),R.color.white))
-                binding.tvName.setTextColor(ContextCompat.getColor(requireActivity(),R.color.white))
-                binding.tvSunset.setTextColor(ContextCompat.getColor(requireActivity(),R.color.white))
-                binding.tvSunrise.setTextColor(ContextCompat.getColor(requireActivity(),R.color.white))
+                whiteText()
             }
         }
 
@@ -166,6 +156,16 @@ class FirstFragment() : Fragment() {
         }
 
         activityViewModel.saveToDB(Weather(cityData.name,cityData.sys.country,MathHelper().roundOffDecimal(celciusTemp),DateHelper().getCurrentDateTime().toString()))
+    }
+
+    private fun whiteText(){
+        binding.ivBg.loadDrawable(R.drawable.bg_rainy)
+        binding.tvLat.setTextColor(ContextCompat.getColor(requireActivity(),R.color.white))
+        binding.tvLong.setTextColor(ContextCompat.getColor(requireActivity(),R.color.white))
+        binding.tvCountry.setTextColor(ContextCompat.getColor(requireActivity(),R.color.white))
+        binding.tvName.setTextColor(ContextCompat.getColor(requireActivity(),R.color.white))
+        binding.tvSunset.setTextColor(ContextCompat.getColor(requireActivity(),R.color.white))
+        binding.tvSunrise.setTextColor(ContextCompat.getColor(requireActivity(),R.color.white))
     }
 
 
@@ -204,6 +204,4 @@ class FirstFragment() : Fragment() {
             }
         }
     }
-
-
 }

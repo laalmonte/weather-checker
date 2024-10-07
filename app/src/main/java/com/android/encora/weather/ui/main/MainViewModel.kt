@@ -13,8 +13,6 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 
-
-@FlowPreview
 @HiltViewModel
 class MainViewModel
 @Inject constructor(
@@ -36,9 +34,9 @@ class MainViewModel
 
     }
 
-    fun getCityData(longitude: String, latitude: String) {
+    fun getCityData(longitude: String, latitude: String,  appId:String) {
         viewModelScope.launch {
-            val resp = weatherRepository.getCityData(latitude, longitude)
+            val resp = weatherRepository.getCityData(latitude, longitude, appId)
             _weatherResp.postValue(resp)
         }
     }

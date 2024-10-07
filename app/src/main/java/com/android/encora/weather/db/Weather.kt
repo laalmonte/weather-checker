@@ -5,9 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import java.io.Serializable
 
-/*
-Track is the database object equivalent of Result
-*/
+
 @Entity(tableName = "Weather")
 data class Weather(
     @ColumnInfo(name = "name") val name: String?,

@@ -7,7 +7,7 @@ import androidx.room.*
 interface WeatherDao {
 
     @Query("SELECT * FROM Weather ORDER BY name ASC")
-    fun getSavedTrackFromDao(): List<Weather>
+    fun getSavedWeatherFromDao(): List<Weather>
 
     @Insert
     fun save(weather: Weather)

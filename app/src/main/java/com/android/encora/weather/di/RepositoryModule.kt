@@ -14,7 +14,7 @@ object RepositoryModule {
 
     @Provides
     @Singleton
-    fun provideTrackRepository(
+    fun provideWeatherRepository(
         weatherDao: WeatherDao,
     ): WeatherRepository =
         WeatherRepository(weatherDao)

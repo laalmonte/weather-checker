@@ -58,7 +58,6 @@ class SecondFragment() : Fragment() {
         })
 
         activityViewModel.data2.observe( viewLifecycleOwner, Observer { weather ->
-            Log.e("CHECKER", "Weather from db ${weather.toString()}" )
             weatherList = weather
             if (weatherList.size > 0){
                 itemAdapter.updateWeatherList(weatherList)

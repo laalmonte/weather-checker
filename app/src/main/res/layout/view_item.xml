@@ -15,7 +15,7 @@
         <androidx.appcompat.widget.LinearLayoutCompat
             android:orientation="vertical"
             android:layout_margin="3dp"
-            android:id="@+id/trackLayout"
+            android:id="@+id/itemLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
             <androidx.constraintlayout.widget.ConstraintLayout

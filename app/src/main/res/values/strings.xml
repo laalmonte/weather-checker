@@ -12,5 +12,8 @@
     <string name="time">Time::</string>
     <string name="add">ADD</string>
     <string name="clear">CLEAR</string>
+    <string name="login">LOGIN</string>
+    <string name="app_id">App ID: </string>
+    <string name="insert_app_id">Insert App ID here </string>
 
 </resources>

@@ -3,9 +3,6 @@ package com.android.encora.weather.db
 import javax.inject.Inject
 import kotlinx.coroutines.coroutineScope
 
-/*
-TrackRepository serves as the connection for database and api
-*/
 class WeatherRepository
 @Inject constructor(
     private val weatherDao: WeatherDao,
@@ -18,7 +15,7 @@ class WeatherRepository
 
     suspend fun getSaveWeather() : List<Weather> {
         return coroutineScope {
-            weatherDao.getSavedTrackFromDao()
+            weatherDao.getSavedWeatherFromDao()
         }
     }
 
